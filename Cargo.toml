@@ -1,0 +1,11 @@
+[package]
+name = "graphiclity"
+version = "0.1.0"
+edition = "2024"
+authors = ["BersisSe"]
+license = "MIT"
+
+
+[dependencies]
+winit = {version ="*", features = ["rwh_05"]}
+pixels = "0.14.0"
