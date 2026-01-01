@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2024"
 authors = ["BersisSe"]
 license = "MIT"
+keywords = ["gui","immediate", "graphics"]
 description = "A Minimal Graphics Library "
-categories = ["gui","immediate", "graphics"]
+categories = ["gui", "graphics"]
 readme = "README.md"
 
 [dependencies]
