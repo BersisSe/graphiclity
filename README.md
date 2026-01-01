@@ -8,6 +8,8 @@ If you've ever tried to draw pixels to a window in Rust for example, for a CHIP-
 
 It provides a small, immediate-mode drawing API on top of a window and render loop, without forcing a UI framework or architectural style.
 
+
+
 ---
 
 ## Graphiclity is not!
@@ -32,17 +34,55 @@ If you need those things, Graphiclity is probably not the right tool and that’
 
 ## Example
 
+### Basic Drawing
 ```rust
 use graphiclity::{run, Color};
 
 fn main() {
     run(|g| {
-        g.clear(Color::BLACK);
-        g.rect(10, 10, 64, 32, Color::WHITE);
+        g.clear(Color::WHITE);
+        g.rect(50, 50, 100, 100, Color::BLACK);
     });
 }
 ```
-
+![drawing](./assets/drawing_demo.png)
+### And A bouncing Rect
+```rust
+use graphiclity::Color;
+fn main() {
+    let mut x: i32 = 50;
+    let mut y: i32 = 50;
+    let mut vx: i32 = 2;
+    let mut vy: i32 = 3;
+    let rect_w: i32 = 20;
+    let rect_h: i32 = 20;
+    
+    graphiclity::run(conf, move |g| {
+        let (width, height) = g.logical_size();
+        
+        g.clear(Color::WHITE);
+        
+        // Draw title
+        g.text(10, 10, "Bouncing Rectangle Demo", Color::CYAN);
+        
+        // Draw coordinates
+        g.text(10, 220, &format!("X: {} Y: {}", x, y), Color::BLACK);
+        
+        x += vx;
+        y += vy;
+        
+        if x <= 0 || x + rect_w >= width as i32 {
+            vx = -vx;
+        }
+        if y <= 0 || y + rect_h >= height as i32 {
+            vy = -vy;
+        }
+        
+        g.rect(x, y, rect_w, rect_h, Color::rgb(128, 23, 255));
+    });
+}
+```
+![demo](./assets/graphliclity_demo.gif)
 
 ---
 
