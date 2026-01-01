@@ -2,8 +2,3 @@
 ✅ = _Means Complete_
 
 ---
-
-### v0.2.x – Polish & Ergonomics
-
-
-

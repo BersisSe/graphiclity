@@ -50,7 +50,7 @@ fn main() {
 
 - Developing a Emulator(Especially a Retro one) = Perfect ✅
 - Developing Software in Rust that needs basic Graphical Output = Perfect ✅
-- Developing a UI Framework taking Graphiclity as a foundation = Plausible ⚠️(Extensibility api is not yet implemented)
+- Developing a UI Framework taking Graphiclity as a foundation = Plausible ⚠️(Extensibility API is not yet implemented)
 - Developing a Full fledged Game or a Desktop Application = Nope ❌ You'll struggle and will need to implement most of the things by yourself
 
 ---
@@ -94,4 +94,7 @@ Drawing a rectangle should not require hundreds of lines of setup.
 
 Graphiclity is currently under heavy development.
 APIs may change as the library is refined through real-world use.
+
+## Final Notes
+Any Kind of Contributions are welcome! From Extending to Changing out the Core check out the [CONTRIBUTING.md](./CONTRIBUTING.md)
 

@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 authors = ["BersisSe"]
 license = "MIT"
-
+categories = ["gui","immediate", "graphics"]
+readme = "README.md"
 
 [dependencies]
 winit = {version ="*", features = ["rwh_05"]}
