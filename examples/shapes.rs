@@ -6,7 +6,8 @@ fn main() {
         .set_window_size((1280,640))
         .build();
 
-    run_with(c, |g| {
+    run_with(c, |ctx| {
+        let g = ctx.graphics(); // Get a handle to the graphics
         g.clear(Color::WHITE);
 
         // Triangle vertices

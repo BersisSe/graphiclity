@@ -17,7 +17,8 @@ fn main() {
     let rect_w: i32 = 20;
     let rect_h: i32 = 20;
     
-    graphiclity::run_with(conf, move |g| {
+    graphiclity::run_with(conf, move |ctx| {
+        let g = ctx.graphics(); // Get a handle to the graphics
         let (width, height) = g.logical_size();
         
         g.clear(Color::WHITE);

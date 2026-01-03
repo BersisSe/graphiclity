@@ -8,8 +8,6 @@ If you've ever tried to draw pixels to a window in Rust for example, for a CHIP-
 
 It provides a small, immediate-mode drawing API on top of a window and render loop, without forcing a UI framework or architectural style.
 
-
-
 ---
 
 ## Graphiclity is not!
