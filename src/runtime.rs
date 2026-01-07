@@ -1,3 +1,5 @@
+use std::time::{Duration, Instant};
+
 use winit::application::ApplicationHandler;
 use winit::dpi::{LogicalSize, PhysicalSize};
 use winit::event::WindowEvent;
@@ -18,6 +20,7 @@ pub struct Runtime<F> {
     context: Option<WindowContext>,
     backend: Option<PixelsBackend>,
     draw_fn: F,
+    last_frame_time: Instant,
 }
 
 impl<F> Runtime<F>
@@ -40,6 +43,7 @@ where
             context: Some(WindowContext::new(graphics, inputs)),
             backend: None,
             draw_fn: draw_fn,
+            last_frame_time: Instant::now(),
         }
     }
 }
@@ -82,12 +86,24 @@ where
                 event_loop.exit();
             }
             WindowEvent::RedrawRequested => {
+                let now = Instant::now();
+                let frame_time = now.duration_since(self.last_frame_time);
+                self.last_frame_time = now; // Update immediately
+
                 let mut context = self.context.as_mut().unwrap();
                 let renderer = self.backend.as_mut().unwrap();
+
+                let mut dt = frame_time.as_secs_f64();
+
+                // If dt is huge (window move), treat it as a "pause and resume"
+                // rather than trying to jump forward.
+                if dt > 0.1 {
+                    dt = 1.0 / self.config.target_fps.unwrap_or(60) as f64;
+                }
+                context.inputs.update_mouse_mapping(&context.gfx);
+                context.dt = dt;
                 context.gfx.begin_frame();
-
                 (self.draw_fn)(&mut context);
-
                 renderer.render(context.gfx.commands());
             }
             WindowEvent::Resized(physical_size) => {
@@ -120,10 +136,24 @@ where
             .process_device_event(&event);
     }
 
-    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         self.context.as_mut().unwrap().inputs.helper.end_step();
         if let Some(win) = &self.window {
-            win.request_redraw();
+            if let Some(target_fps) = self.config.target_fps {
+                let frame_duration = Duration::from_secs_f64(1.0 / target_fps as f64);
+                let elapsed = self.last_frame_time.elapsed();
+
+                if elapsed >= frame_duration {
+                    win.request_redraw();
+                } else {
+                    event_loop.set_control_flow(winit::event_loop::ControlFlow::WaitUntil(
+                        Instant::now() + (frame_duration - elapsed),
+                    ));
+                }
+            } else {
+                // Uncapped behavior
+                win.request_redraw();
+            }
         }
     }
 }

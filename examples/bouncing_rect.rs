@@ -1,44 +1,48 @@
-use graphiclity::{Color, Config};
+use graphiclity::{Color, Config, Vec2};
 
 fn main() {
     let conf = Config {
+        title: "Bouncing Rect".to_string(),
         resizeable: false,
         logical_width: 320,
         logical_height: 240,
-        window_width: 640,
-        window_height: 480,
-        ..Default::default()
+        window_width: 1290,
+        window_height: 960,
+        target_fps: Some(60)
     };
-    
-    let mut x: i32 = 50;
-    let mut y: i32 = 50;
-    let mut vx: i32 = 2;
-    let mut vy: i32 = 3;
-    let rect_w: i32 = 20;
-    let rect_h: i32 = 20;
-    
+
+    // Using 2D Vectors for Typed Geometric Data.
+    let mut pos = Vec2 { x: 50, y: 50 };
+    let mut vel = Vec2 { x: 2, y: 3 };
+    let size = Vec2 { x: 20, y: 20 };
+
     graphiclity::run_with(conf, move |ctx| {
-        let g = ctx.graphics(); // Get a handle to the graphics
+        let dt = ctx.delta_time();
+        let g = ctx.graphics();
+
+        // We multiply by 60.0 so that '2' feels like '2 pixels per frame' at 60fps
+        pos.x += (vel.x as f64 * dt * 60.0) as i32;
+        pos.y += (vel.y as f64 * dt * 60.0) as i32;
+
         let (width, height) = g.logical_size();
-        
+
+        // Collision detection
+        if pos.x <= 0 || pos.x + size.x >= width as i32 {
+            vel.x = -vel.x;
+        }
+        if pos.y <= 0 || pos.y + size.y >= height as i32 {
+            vel.y = -vel.y;
+        }
+
+        // Drawing
         g.clear(Color::WHITE);
         
-        // Draw title
-        g.text(10, 10, "Bouncing Rectangle Demo", Color::CYAN);
+        // Notice we can pass 'pos' and 'size' directly or as tuples. Painting methods accept Into<Vec2>
+        g.rect(pos, size, Color::rgb(128, 23, 255));
+
+        // Lastly, lest draw some UI
+        g.text((10, 10), "Graphiclity v0.2.0", Color::CYAN);
+        g.text((10, height as i32 - 20), format!("Pos: {}, {}", pos.x, pos.y), Color::BLACK);
         
-        // Draw coordinates
-        g.text(10, 220, &format!("X: {} Y: {}", x, y), Color::BLACK);
-        
-        x += vx;
-        y += vy;
-        
-        if x <= 0 || x + rect_w >= width as i32 {
-            vx = -vx;
-        }
-        if y <= 0 || y + rect_h >= height as i32 {
-            vy = -vy;
-        }
-        
-        g.rect(x, y, rect_w, rect_h, Color::rgb(128, 23, 255));
     });
 }

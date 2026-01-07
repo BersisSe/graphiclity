@@ -1,24 +1,45 @@
-use graphiclity::{Color, Config, run_with};
+use graphiclity::{Color, Config,};
 
 fn main() {
-    let c = Config::builder()
-        .set_logical_size((640,320))
-        .set_window_size((1280,640))
-        .build();
+    let conf = Config::builder().with_title("Geometry").build();
 
-    run_with(c, |ctx| {
-        let g = ctx.graphics(); // Get a handle to the graphics
-        g.clear(Color::WHITE);
+    graphiclity::run_with(conf, |ctx| {
+        let g= ctx.graphics();
+        g.clear(Color::rgb(30, 30, 45)); // Dark navy background
+        
+        // 1. Lines: Drawing a simple grid or crosshair
+        g.line((320, 0), (320, 400), Color::rgba(255, 255, 255, 0.2));
+        g.line((0, 200), (640, 200), Color::rgba(255, 255, 255, 0.2));
 
-        // Triangle vertices
-        let (x1, y1) = (100, 50);
-        let (x2, y2) = (500, 50);
-        let (x3, y3) = (300, 250);
+        // 2. Rectangles: Outline vs standard blocks
+        // Bottom left square
+        g.rect((135, 260), (50, 50), Color::CYAN);
+        
+        // 3. Circles: Centered primitives
+        // Drawing a target pattern
+        let center = (160, 100);
+        g.circle(center, 40, Color::RED);
+        g.circle(center, 30, Color::WHITE);
+        g.circle(center, 20, Color::RED);
+        g.circle(center, 10, Color::WHITE);
 
-        // Draw triangle
-        g.triangle(x1, y1, x2, y2, x3, y3, Color::RED);
-    
-        // Draw rectangle at the centroid of the triangle
-        g.rect(300 - 50/2, 116 - 50/2, 50, 50, Color::RED);
+        // 4. Triangles: Custom coordinates
+        g.triangle(
+            (475, 50),  // Top
+            (525, 120), // Bottom Right
+            (425, 120), // Bottom Left
+            Color::YELLOW
+        );
+        
+        g.triangle(
+            (425, 250),  // Top
+            (525, 310), // Bottom Right
+            (425, 310), // Bottom Left
+            Color::GREEN
+        );
+
+        // 6. Text Labels
+        g.text((220, 10), "Graphiclity Shapes Demo", Color::WHITE);
     });
 }
+

@@ -22,7 +22,9 @@ It provides a small, immediate-mode drawing API on top of a window and render lo
 If you need those things, Graphiclity is probably not the right tool and that’s okay, it doesn't have to be.
 
 ---
+
 ## Features
+
 - ✅ Simple pixel and shape drawing (rectangles, pixels)
 - ✅ Built-in 8×8 bitmap font for text rendering
 - ✅ Automatic DPI scaling
@@ -33,53 +35,57 @@ If you need those things, Graphiclity is probably not the right tool and that’
 ## Example
 
 ### Basic Drawing
+
 ```rust
 use graphiclity::{run, Color};
 
 fn main() {
-    run(|g| {
+    run(|ctx| {
+        let g = ctx.graphics();
         g.clear(Color::WHITE);
         g.rect(50, 50, 100, 100, Color::BLACK);
     });
 }
 ```
+
 ![drawing](./assets/drawing_demo.png)
+
 ### And A bouncing Rect
+
 ```rust
 use graphiclity::Color;
 fn main() {
-    let mut x: i32 = 50;
-    let mut y: i32 = 50;
-    let mut vx: i32 = 2;
-    let mut vy: i32 = 3;
-    let rect_w: i32 = 20;
-    let rect_h: i32 = 20;
-    
-    graphiclity::run(conf, move |g| {
+    let mut pos = Vec2 { x: 50, y: 50 };
+    let mut vel = Vec2 { x: 2, y: 3 };
+    let size = Vec2 { x: 20, y: 20 };
+
+    graphiclity::run_with(conf, move |ctx| {
+        let dt = ctx.delta_time();
+        let g = ctx.graphics();
+
+        pos.x += (vel.x as f64 * dt * 60.0) as i32;
+        pos.y += (vel.y as f64 * dt * 60.0) as i32;
+
         let (width, height) = g.logical_size();
-        
+
+        if pos.x <= 0 || pos.x + size.x >= width as i32 {
+            vel.x = -vel.x;
+        }
+        if pos.y <= 0 || pos.y + size.y >= height as i32 {
+            vel.y = -vel.y;
+        }
+
         g.clear(Color::WHITE);
-        
-        // Draw title
-        g.text(10, 10, "Bouncing Rectangle Demo", Color::CYAN);
-        
-        // Draw coordinates
-        g.text(10, 220, &format!("X: {} Y: {}", x, y), Color::BLACK);
-        
-        x += vx;
-        y += vy;
-        
-        if x <= 0 || x + rect_w >= width as i32 {
-            vx = -vx;
-        }
-        if y <= 0 || y + rect_h >= height as i32 {
-            vy = -vy;
-        }
-        
-        g.rect(x, y, rect_w, rect_h, Color::rgb(128, 23, 255));
+
+        g.rect(pos, size, Color::rgb(128, 23, 255));
+
+        g.text((10, 10), "Graphiclity v0.2.0", Color::CYAN);
+        g.text((10, height as i32 - 20), format!("Pos: {}, {}", pos.x, pos.y), Color::BLACK);
+
     });
 }
 ```
+
 ![demo](./assets/graphliclity_demo.gif)
 
 ---
@@ -122,6 +128,7 @@ Drawing a rectangle should not require hundreds of lines of setup.
 ---
 
 ## Limitations
+
 - **No low-level access**: Graphiclity intentionally hides renderer internals to keep things simple
 - **Letterboxing**: The current backend (Pixels 0.14) adds black bars when window aspect ratio doesn't match logical resolution
   - **Solution**: Use matching aspect ratios (e.g., logical 320×240 with window 640×480, both 4:3)
@@ -134,5 +141,5 @@ Graphiclity is currently under heavy development.
 APIs may change as the library is refined through real-world use.
 
 ## Final Notes
-Any Kind of Contributions are welcome! From Extending to Changing out the Core check out the [CONTRIBUTING.md](./CONTRIBUTING.md)
 
+Any Kind of Contributions are welcome! From Extending to Changing out the Core check out the [CONTRIBUTING.md](./CONTRIBUTING.md)

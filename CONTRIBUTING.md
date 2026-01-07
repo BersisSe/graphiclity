@@ -92,7 +92,7 @@ If you depend on internal behavior, you should:
 To avoid confusion, the following will **not** be accepted into core:
 
 - UI widgets or layout systems
-- Game engine features
+- Game engine features(Like Physics systems, Scenes Systems etc.)
 - Asset pipelines
 - Audio systems
 - Retained-mode rendering

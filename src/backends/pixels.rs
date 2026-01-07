@@ -1,4 +1,4 @@
-use crate::{Color, graphics::DrawCommand};
+use crate::{Color, graphics::DrawCommand, vector::Vec2};
 use pixels::{Pixels, PixelsBuilder, SurfaceTexture};
 use winit::dpi::{LogicalSize, PhysicalSize};
 
@@ -29,7 +29,8 @@ impl PixelsBackend {
             logic_width: logic_size.width,
         }
     }
-    fn draw_text(&mut self, x: i32, y: i32, text: &str, color: Color) {
+    fn draw_text(&mut self, pos: Vec2, text: &str, color: Color) {
+        let (x, y) = pos.as_u32_tuple();
         let mut cursor_x = x;
         let cursor_y = y;
 
@@ -53,12 +54,10 @@ impl PixelsBackend {
                     // Check if this bit is set
                     if (byte & (1 << col)) != 0 {
                         let px = cursor_x + col;
-                        let py = cursor_y + row as i32;
+                        let py = cursor_y + row as u32;
 
                         // Only draw if within bounds
-                        if px >= 0
-                            && py >= 0
-                            && (px as u32) < self.logic_width
+                        if (px as u32) < self.logic_width
                             && (py as u32) < self.logic_height
                         {
                             self.set_pixel(px as u32, py as u32, color);
@@ -72,21 +71,20 @@ impl PixelsBackend {
         }
     }
 
-    
-    fn draw_rect(&mut self, x: u32, y: u32, w: u32, h: u32, color: Color) {
-        // 1. Calculate boundaries using saturating math to prevent overflow panics
+    fn draw_rect(&mut self, pos: Vec2, size: Vec2, color: Color) {
+        let (x, y) = pos.as_u32_tuple();
+        let (w, h) = size.as_u32_tuple();
+       
         let x1 = x;
         let y1 = y;
         let x2 = x.saturating_add(w);
         let y2 = y.saturating_add(h);
 
-        // 2. Clip to the logical screen size
         let start_x = x1.min(self.logic_width);
         let start_y = y1.min(self.logic_height);
         let end_x = x2.min(self.logic_width);
         let end_y = y2.min(self.logic_height);
 
-        // If the rect is entirely off-screen, start will equal end
         if start_x >= end_x || start_y >= end_y {
             return;
         }
@@ -104,29 +102,63 @@ impl PixelsBackend {
             }
         }
     }
-    fn draw_line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: Color) {
+    fn draw_line(&mut self, p1: Vec2, p2: Vec2, color: Color) {
+        let mut x0 = p1.x;
+        let mut y0 = p1.y;
+        let x1 = p2.x;
+        let y1 = p2.y;
+
         let dx = (x1 - x0).abs();
         let sx = if x0 < x1 { 1 } else { -1 };
         let dy = -(y1 - y0).abs();
         let sy = if y0 < y1 { 1 } else { -1 };
         let mut err = dx + dy;
-        let mut x = x0;
-        let mut y = y0;
 
         loop {
-            if x >= 0 && y >= 0 {
-                self.set_pixel(x as u32, y as u32, color);
+            if x0 >= 0 && y0 >= 0 && (x0 as u32) < self.logic_width && (y0 as u32) < self.logic_height {
+                self.set_pixel(x0 as u32, y0 as u32, color);
             }
-            if x == x1 && y == y1 { break; }
+            if x0 == x1 && y0 == y1 { break; }
             let e2 = 2 * err;
-            if e2 >= dy { err += dy; x += sx; }
-            if e2 <= dx { err += dx; y += sy; }
+            if e2 >= dy { err += dy; x0 += sx; }
+            if e2 <= dx { err += dx; y0 += sy; }
         }
     }
-    fn draw_triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, color: Color) {
-        self.draw_line(x1, y1, x2, y2, color);
-        self.draw_line(x2, y2, x3, y3, color);
-        self.draw_line(x3, y3, x1, y1, color);
+    fn draw_circle(&mut self, center: Vec2, radius: i32, color: Color) {
+        let mut x = radius;
+        let mut y = 0;
+        let mut err = 0;
+
+        while x >= y {
+            let pts = [
+                (center.x + x, center.y + y),
+                (center.x + y, center.y + x),
+                (center.x - y, center.y + x),
+                (center.x - x, center.y + y),
+                (center.x - x, center.y - y),
+                (center.x - y, center.y - x),
+                (center.x + y, center.y - x),
+                (center.x + x, center.y - y),
+            ];
+            for (px, py) in pts {
+                if px >= 0 && py >= 0 {
+                    self.set_pixel(px as u32, py as u32, color);
+                }
+            }
+            y += 1;
+            if err <= 0 {
+                err += 2 * y + 1;
+            }
+            if err > 0 {
+                x -= 1;
+                err -= 2 * x + 1;
+            }
+        }
+    }
+    fn draw_triangle(&mut self, p1: Vec2, p2: Vec2, p3: Vec2, color: Color) {
+        self.draw_line(p1, p2, color);
+        self.draw_line(p2, p3, color);
+        self.draw_line(p3, p1, color);
     }
 
     fn set_pixel(&mut self, x: u32, y: u32, color: Color) {
@@ -157,14 +189,17 @@ impl PixelsBackend {
         for cmd in commands {
             match cmd {
                 DrawCommand::Clear(color) => self.clear(*color),
-                DrawCommand::Pixel { x, y, color } => self.set_pixel(*x, *y, *color),
-                DrawCommand::Rect { x, y, w, h, color } => self.draw_rect(*x, *y, *w, *h, *color),
-                DrawCommand::Text { x, y, text, color } => self.draw_text(*x, *y, text, *color),
-                DrawCommand::Line { x0, y0, x1, y1, color } => self.draw_line(*x0, *y0, *x1, *y1, *color),
-                DrawCommand::Triangle { x1, y1, x2, y2, x3, y3, color } => self.draw_triangle(*x1, *y1, *x2, *y2, *x3, *y3, *color)
+                DrawCommand::Pixel { pos, color } => {
+                    let (x, y) = pos.as_u32_tuple();
+                    self.set_pixel(x, y, *color);
+                }
+                DrawCommand::Circle { center, radius, color } =>  self.draw_circle(*center, *radius, *color),
+                DrawCommand::Rect { pos, size, color } => self.draw_rect(*pos, *size, *color),
+                DrawCommand::Text { pos, text, color } => self.draw_text(*pos, text, *color),
+                DrawCommand::Line { start, end, color } => self.draw_line(*start, *end, *color),
+                DrawCommand::Triangle { p1, p2, p3, color } => self.draw_triangle(*p1, *p2, *p3, *color),
             }
         }
-
         if let Err(err) = self.pixels.render() {
             eprintln!("Pixels render failed: {}", err);
         }

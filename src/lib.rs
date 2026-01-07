@@ -1,3 +1,23 @@
+//! # Graphiclity
+//!
+//! A minimal, immediate-mode 2D drawing library designed for simplicity and ease of use.
+//!
+//! Graphiclity provides a higher-level interface around `pixels` and `winit`, offering a
+//! logical pixel buffer that automatically handles scaling and DPI.
+//!
+//! ## Core Concepts
+//!
+//! - **[WindowContext]**: The primary interface provided to your draw loop. It contains
+//!   access to [Graphics], [Input], and timing data.
+//! - **Logical Resolution**: You define a fixed "Virtual resolution" (e.g., 320x240). 
+//!   The library scales this to fit the physical window.
+//! - **[Vec2]**: A flexible coordinate type. Most methods accept `impl Into<Vec2>`,
+//!   allowing you to pass `(x, y)` tuples directly.
+//! - **Immediate Mode** : You define the graphics and you see it _immediately_
+//! ## Some Examples
+//! 
+
+
 mod backends;
 mod color;
 mod graphics;
@@ -6,11 +26,13 @@ mod text;
 mod input;
 mod context;
 mod config;
+mod vector;
 
 pub use graphics::Graphics;
 pub use color::Color;
 pub use config::Config;
 pub use input::Input;
+pub use vector::Vec2;
 
 // Re-Exports from winit events
 pub use winit::keyboard::KeyCode;
@@ -25,7 +47,7 @@ use winit::event_loop::EventLoop;
 
 /// Run the application with default configuration
 ///```rust
-/// run(|g|{
+/// run(|ctx|{
 ///   // your drawing code here
 /// });
 /// ```

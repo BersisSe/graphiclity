@@ -1,40 +1,37 @@
 use winit::dpi::{LogicalSize, PhysicalSize};
 
 use crate::Color;
+use crate::vector::Vec2;
 
 pub enum DrawCommand {
     Clear(Color),
     Pixel {
-        x: u32,
-        y: u32,
+        pos: Vec2,
         color: Color,
     },
-    Line{
-        x0: i32,
-        y0: i32,
-        x1: i32,
-        y1: i32,
+    Line {
+        start: Vec2,
+        end: Vec2,
         color: Color,
     },
     Rect {
-        y: u32,
-        x: u32,
-        w: u32,
-        h: u32,
+        pos: Vec2,
+        size: Vec2,
         color: Color,
     },
-    Triangle{
-        x1: i32,
-        y1: i32,
-        x2: i32,
-        y2: i32,
-        x3: i32,
-        y3: i32,
+    Circle{
+        center : Vec2,
+        radius: i32,
+        color: Color,
+    },
+    Triangle {
+        p1: Vec2,
+        p2: Vec2,
+        p3: Vec2,
         color: Color,
     },
     Text {
-        x: i32,
-        y: i32,
+        pos: Vec2,
         text: String,
         color: Color,
     },
@@ -50,7 +47,7 @@ pub struct Graphics {
 }
 
 impl Graphics {
-    /// Create a new Graphics context
+    /// Create a new Graphics Struct
     pub(crate) fn new(logic_size: LogicalSize<u32>, phy_size: PhysicalSize<u32>) -> Self {
         Graphics {
             commands: Vec::with_capacity(128),
@@ -61,7 +58,7 @@ impl Graphics {
         }
     }
     /// Clear commands at the start of each frame
-    /// This should be called internally by the runtime at the start of a redraw
+    /// This should be called internally by the runtime at the before rendering
     pub(crate) fn begin_frame(&mut self) {
         self.commands.clear();
     }
@@ -82,85 +79,52 @@ impl Graphics {
     pub fn clear(&mut self, color: Color) {
         self.commands.push(DrawCommand::Clear(color));
     }
-    /// Draw a single pixel at (x, y) with the specified color
-    pub fn pixel(&mut self, x: i32, y: i32, color: Color) {
-       
-        if x < 0 || y < 0 {
-            return;
-        }
+    /// Draw a single pixel to a given Point as a [Vec2]
+    pub fn pixel(&mut self, pos: impl Into<Vec2>, color: Color) {
+        let p = pos.into(
+            
+        );
+        // Internal guard check
+        if p.x < 0 || p.y < 0 { return; }
 
-        self.commands.push(DrawCommand::Pixel {
-            x: x as u32,
-            y: y as u32,
-            color,
-        });
+        self.commands.push(DrawCommand::Pixel { pos: p, color });
     }
-    /// Draw a line from (x0, y0) to (x1, y1) with the specified color
-    pub fn line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, color: Color) {
-        // Guards
-        if x0 < 0 && x1 < 0 {
-            return;
-        }
-        if y0 < 0 && y1 < 0 {
-            return;
-        }
-
+    /// Draw a line between 2 Points.
+    pub fn line(&mut self, start: impl Into<Vec2>, end: impl Into<Vec2>, color: Color) {
         self.commands.push(DrawCommand::Line {
-            x0,
-            y0,
-            x1,
-            y1, 
+            start: start.into(),
+            end: end.into(),
             color,
         });
     }
-    /// Draw a rectangle at (x, y) with width w and height h with the specified color
-    pub fn rect(&mut self, x: i32, y: i32, w: i32, h: i32, color: Color) {
-        // Handle negative x/y by shifting the start and shrinking the width/height
-        let mut rx = x;
-        let mut ry = y;
-        let mut rw = w;
-        let mut rh = h;
-
-        if rx < 0 {
-            rw += rx; // Reduce width by the amount it's off-screen
-            rx = 0;
-        }
-        if ry < 0 {
-            rh += ry; // Reduce height by the amount it's off-screen
-            ry = 0;
-        }
-
-        // If there is still something to draw
-        if rw > 0 && rh > 0 {
-            self.commands.push(DrawCommand::Rect {
-                x: rx as u32,
-                y: ry as u32,
-                w: rw as u32,
-                h: rh as u32,
-                color,
-            });
-        }
-    }
-    /// Draw a triangle with vertices at (x1, y1), (x2, y2), (x3, y3) with the specified color
-    pub fn triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, color: Color) {
-        self.commands.push(DrawCommand::Triangle {
-            x1,
-            y1,
-            x2,
-            y2,
-            x3,
-            y3,
-            color,
-        });
+    /// Draw a filled Rectangle on `pos` with a given `size`.
+    pub fn rect(&mut self, pos: impl Into<Vec2>, size: impl Into<Vec2>, color: Color) {
+        let p = pos.into();
+        let s = size.into();
         
+        // We can still do your negative clipping logic here easily
+        if s.x <= 0 || s.y <= 0 { return; }
+
+        self.commands.push(DrawCommand::Rect { pos: p, size: s, color });
     }
-    /// Draw text at (x, y) with the specified color using the internal bitmap font
-    pub fn text<T: Into<String>>(&mut self, x: i32, y: i32, text: T, color: Color) {
+    pub fn circle(&mut self, center: impl Into<Vec2>, radius: i32, color : Color){
+        self.commands.push(DrawCommand::Circle { center: center.into(), radius,  color});
+    }
+    /// Draw a Hollow Triangle using the given 3 points.
+    pub fn triangle(&mut self, p1: impl Into<Vec2>, p2: impl Into<Vec2>, p3: impl Into<Vec2>, color: Color) {
+        self.commands.push(DrawCommand::Triangle {
+            p1: p1.into(),
+            p2: p2.into(),
+            p3: p3.into(),
+            color,
+        });
+    }
+    /// Draw text at `pos` with the specified color using the internal 8x8 bitmap font
+    pub fn text<T: Into<String>>(&mut self, pos: impl Into<Vec2>, text: T, color: Color) {
         self.commands.push(DrawCommand::Text {
-            x,
-            y,
+            pos: pos.into(),
             text: text.into(),
             color,
         });
-    }
+    }   
 }
