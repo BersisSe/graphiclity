@@ -28,8 +28,8 @@ If you want to:
 Instead:
 
 - Use the **public API**
-- Use the **Extensibility API** (when available)
-- Create a **separate crate** that depends on `Graphicility`
+- Use the **Extensibility API** see [Developing Extensions](./DEVELOPING_EXTENSIONS.md)
+- Create a **separate crate** that depends on `graphicility`
 
 ### Why?
 

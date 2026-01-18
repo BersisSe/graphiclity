@@ -27,13 +27,15 @@ mod input;
 mod context;
 mod config;
 mod vector;
+#[cfg(feature = "extension")]
+pub mod extensions;
 
 pub use graphics::Graphics;
 pub use context::FrameContext;
 pub use color::Color;
 pub use config::Config;
 pub use input::Input;
-pub use vector::Vec2;
+pub use vector::{Vec2,Rect};
 
 // Re-Exports from winit events
 pub use winit::keyboard::KeyCode;
@@ -51,11 +53,11 @@ use winit::event_loop::EventLoop;
 ///   // your drawing code here
 /// });
 /// ```
-pub fn run<F>(app: F)
+pub fn run<F>(draw_fn: F)
 where
     F: FnMut(&mut FrameContext),
 {
-    run_with(Config::default(), app);
+    run_with(Config::default(), draw_fn);
 }
 
 /// Run the application with custom configuration
@@ -71,11 +73,12 @@ where
 ///   // your drawing code here
 /// });
 /// ```
-pub fn run_with<F>(config: Config, app: F)
+pub fn run_with<F>(config: Config, draw_fn: F)
 where
     F: FnMut(&mut FrameContext),
 {
     let event_loop = EventLoop::new().unwrap();
-    let mut app = Runtime::new(app, config);
+    let mut app = Runtime::new(draw_fn, config,);
     event_loop.run_app(&mut app).unwrap()
 }
+

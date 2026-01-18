@@ -24,6 +24,12 @@ impl Into<Vec2> for (i32,i32) {
     }
 }
 
+impl Into<Vec2> for (u32,u32) {
+    fn into(self) -> Vec2 {
+        Vec2 { x: self.0 as i32, y: self.1 as i32 }
+    }
+}
+
 impl Into<Vec2> for (f32,f32) {
     fn into(self) -> Vec2 {
         Vec2 { 
@@ -44,5 +50,26 @@ impl std::ops::Sub for Vec2 {
     type Output = Self;
     fn sub(self, other: Self) -> Self {
         Vec2 { x: self.x - other.x, y: self.y - other.y }
+    }
+}
+/// A Typed Rectangle. Can be used for bounds checking
+pub struct Rect{
+    pub pos: Vec2,
+    pub size: Vec2,
+}
+
+impl Rect {
+    pub fn new(pos: Vec2, size: Vec2) -> Self {
+        Self {
+            pos: pos,
+            size: size,
+        }
+    }
+    
+    pub fn contains(&self, point: Vec2) -> bool {
+        point.x >= self.pos.x && 
+        point.x < self.pos.x + self.size.x &&
+        point.y >= self.pos.y && 
+        point.y < self.pos.y + self.size.y
     }
 }

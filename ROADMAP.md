@@ -26,7 +26,7 @@ This roadmap outlines planned improvements while keeping the core small, explici
 
 ## Mid Term
 
-### Extensibility API
+### Extensibility API ✅
 - Introduce a **minimal and optional** extensibility layer
 - Expose a stable drawing command boundary
 - Allow external libraries hook up to the internals

@@ -1,3 +1,6 @@
+#[cfg(feature = "extension")]
+use crate::extensions::Extension;
+
 /// Main Config of window <br>
 /// Contains logical and physical sizes  <br>
 /// Logical size is your drawing canvas size
@@ -12,13 +15,16 @@ pub struct Config {
     /// Logical resolution Your
     pub logical_width: u32,
     pub logical_height: u32,
-    
+
     // Initial window size
     pub window_width: u32,
     pub window_height: u32,
 
     /// Fps
-    pub target_fps: Option<u32>
+    pub target_fps: Option<u32>,
+
+    #[cfg(feature = "extension")]
+    pub extensions: Vec<Box<dyn Extension>>,
 }
 pub struct ConfigBuilder {
     /// Window Title
@@ -32,7 +38,10 @@ pub struct ConfigBuilder {
     window_width: Option<u32>,
     window_height: Option<u32>,
     /// Fps
-    target_fps: Option<u32>
+    target_fps: Option<u32>,
+    /// Extensions
+    #[cfg(feature = "extension")]
+    extensions: Option<Vec<Box<dyn Extension>>>,
 }
 impl ConfigBuilder {
     /// Set the window title
@@ -40,7 +49,7 @@ impl ConfigBuilder {
         self.title = Some(title.into());
         self
     }
-    pub fn with_target_fps(mut self, fps: u32) -> Self{
+    pub fn with_target_fps(mut self, fps: u32) -> Self {
         self.target_fps = Some(fps);
         self
     }
@@ -56,8 +65,18 @@ impl ConfigBuilder {
         self.logical_height = Some(size.1);
         self
     }
+    /// Sets the window resizeablity.
     pub fn set_resizeable(mut self, resizeable: bool) -> Self {
         self.resizeable = Some(resizeable);
+        self
+    }
+    /// Register a single extension
+    #[cfg(feature = "extension")]
+    pub fn with_extension<Ext: Extension + 'static>(mut self, ext: Ext) -> Self {
+        match self.extensions {
+            Some(ref mut e) => e.push(Box::new(ext)),
+            None => self.extensions = Some(vec![Box::new(ext)]),
+        }
         self
     }
     
@@ -71,6 +90,8 @@ impl ConfigBuilder {
             window_width: self.window_width.unwrap_or(1280),
             window_height: self.window_height.unwrap_or(800),
             target_fps: self.target_fps,
+            #[cfg(feature = "extension")]
+            extensions: self.extensions.unwrap_or(Vec::new()),
         }
     }
 }
@@ -85,6 +106,8 @@ impl Config {
             resizeable: None,
             title: None,
             target_fps: None,
+            #[cfg(feature = "extension")]
+            extensions: None,
         }
     }
 }
@@ -99,6 +122,8 @@ impl Default for Config {
             window_width: 1280,
             window_height: 800,
             target_fps: Some(60),
+            #[cfg(feature = "extension")]
+            extensions: Vec::new(),
         }
     }
 }

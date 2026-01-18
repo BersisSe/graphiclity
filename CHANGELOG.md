@@ -6,7 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## Added
+- `Rect` Type for typed shape geometry and simpler bounds checks.
+- `Extension` Trait to implement custom Extensions that will connect into applications lifecycle.
+- Config now has a `Extensions` field for registering Extensions
+- Finalized the **Extensiblity API** 
+- New `extension` feature to enable the **Extensiblity API**
+- Into<(u32,u32)> trait is now implemented for `Vec2`
 
+**Note** : *See the New [Developing Extensions](./DEVELOPING_EXTENSIONS.md) Page for more info*
+
+## Changed 
+- Bouncing Rect example now uses the Builder instead of manual Config generation.
+
+## Fixed
+- `Input` Not detecting mouse_pressed events correctly.
 
 ## [0.2.0] - 2026-01-07
 

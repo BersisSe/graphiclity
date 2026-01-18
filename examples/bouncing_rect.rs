@@ -1,15 +1,11 @@
 use graphicility::{Color, Config, Vec2};
 
 fn main() {
-    let conf = Config {
-        title: "Bouncing Rect".to_string(),
-        resizeable: false,
-        logical_width: 320,
-        logical_height: 240,
-        window_width: 1290,
-        window_height: 960,
-        target_fps: Some(60)
-    };
+    let conf = Config::builder()
+        .with_title("Bouncing Rect")
+        .set_resizeable(false)
+        .with_target_fps(60)
+        .build();
 
     // Using 2D Vectors for Typed Geometric Data.
     let mut pos = Vec2 { x: 50, y: 50 };
@@ -41,7 +37,7 @@ fn main() {
         g.rect(pos, size, Color::rgb(128, 23, 255));
 
         // Lastly, lest draw some UI
-        g.text((10, 10), "Graphicility v0.2.0", Color::CYAN);
+        g.text((10, 10), "Graphicility v0.3.0", Color::CYAN);
         g.text((10, height as i32 - 20), format!("Pos: {}, {}", pos.x, pos.y), Color::BLACK);
         
     });

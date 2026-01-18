@@ -37,7 +37,7 @@ If you need those things, Graphicility is probably not the right tool and that�
 ### Basic Drawing
 
 ```rust
-use Graphicility::{run, Color};
+use graphicility::{run, Color};
 
 fn main() {
     run(|ctx| {
@@ -53,13 +53,13 @@ fn main() {
 ### And A bouncing Rect
 
 ```rust
-use Graphicility::Color;
+use graphicility::Color;
 fn main() {
     let mut pos = Vec2 { x: 50, y: 50 };
     let mut vel = Vec2 { x: 2, y: 3 };
     let size = Vec2 { x: 20, y: 20 };
 
-    Graphicility::run_with(conf, move |ctx| {
+    graphicility::run_with(conf, move |ctx| {
         let dt = ctx.delta_time();
         let g = ctx.graphics();
 
@@ -79,7 +79,7 @@ fn main() {
 
         g.rect(pos, size, Color::rgb(128, 23, 255));
 
-        g.text((10, 10), "Graphicility v0.2.0", Color::CYAN);
+        g.text((10, 10), "Graphicility v0.3.0", Color::CYAN);
         g.text((10, height as i32 - 20), format!("Pos: {}, {}", pos.x, pos.y), Color::BLACK);
 
     });
@@ -94,7 +94,7 @@ fn main() {
 
 - Developing a Emulator(Especially a Retro one) = Perfect ✅
 - Developing Software in Rust that needs basic Graphical Output = Perfect ✅
-- Developing a UI Framework taking Graphicility as a foundation = Plausible ⚠️(Extensibility API is not yet implemented)
+- Developing a UI Framework taking Graphicility as a foundation = Perfect! See [Developing Extensions](./DEVELOPING_EXTENSIONS.md) ✅
 - Developing a Full fledged Game or a Desktop Application = Nope ❌ You'll struggle and will need to implement most of the things by yourself
 
 ---
